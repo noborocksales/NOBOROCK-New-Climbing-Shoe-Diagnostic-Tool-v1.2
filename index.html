@@ -85,38 +85,48 @@
 
     h2 { color: #222; font-size: 18px; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; margin-top: 0; }
     
+    /* 目立つように改善した詳細検索項目のトグルヘッダー */
     .detail-toggle-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
       user-select: none;
-      border-bottom: 2px solid #e0e0e0;
-      padding-bottom: 6px;
-      margin-top: 25px;
+      background: #e8f4fd;
+      border: 2px solid #1976d2;
+      padding: 14px 18px;
+      border-radius: 8px;
+      margin-top: 30px;
       margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: background 0.2s;
+    }
+    .detail-toggle-header:hover {
+      background: #d0e8fc;
     }
     .detail-toggle-header h2 {
       border-bottom: none;
       padding-bottom: 0;
       margin-top: 0;
       margin-bottom: 0;
+      color: #0d47a1;
+      font-size: 18px;
     }
     .toggle-btn-icon {
-      background: #0d47a1;
+      background: #1976d2;
       color: white;
-      width: 26px;
-      height: 26px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 18px;
       transition: background 0.2s;
     }
     .toggle-btn-icon:hover {
-      background: #1565c0;
+      background: #0d47a1;
     }
 
     #detail-section {
@@ -132,8 +142,8 @@
     select, input[type="number"], input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
     
     .size-input-container { display: flex; gap: 10px; }
-    .size-input-container input { flex: 2; }
-    .size-input-container select { flex: 1; background-color: #fdfdfd; font-weight: bold; color: #0d47a1; }
+    .size-input-container select#sneaker-size-val { flex: 2; background-color: #fff; }
+    .size-input-container select#sneaker-size-unit { flex: 1; background-color: #fdfdfd; font-weight: bold; color: #0d47a1; }
 
     .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
     .checkbox-group label { font-weight: normal; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -209,90 +219,94 @@
       クライミング経験やご予算、つま先の形状、求める足型・ソール性能を選択するだけ。初心者から上級者まで、あなたの実力を引き出すベストなシューズを総合的に分析します。
     </div>
 
-    <form id="diag-form" class="card">
-      <h2 id="txt-h2-basic">基本条件</h2>
-      
-      <div class="form-group">
-        <div class="label-with-help">
-          <label for="sneaker-size-val" id="lbl-sneaker">普段のスニーカーサイズ</label>
-          <span class="help-icon" onclick="openHelp('sneakerSize')">?</span>
+    <form id="diag-form">
+      <!-- 基本条件ブロック -->
+      <div class="card">
+        <h2 id="txt-h2-basic">基本条件</h2>
+        
+        <div class="form-group">
+          <div class="label-with-help">
+            <label for="sneaker-size-val" id="lbl-sneaker">普段のスニーカーサイズ</label>
+            <span class="help-icon" onclick="openHelp('sneakerSize')">?</span>
+          </div>
+          <div class="size-input-container" style="margin-top: 5px;">
+            <select id="sneaker-size-val"></select>
+            <select id="sneaker-size-unit" onchange="onUnitChange()">
+              <option value="cm" selected>cm</option>
+              <option value="US">US</option>
+              <option value="EU">EU</option>
+              <option value="UK">UK</option>
+            </select>
+          </div>
         </div>
-        <div class="size-input-container" style="margin-top: 5px;">
-          <input type="number" id="sneaker-size-val" step="0.5" value="26.0" placeholder="サイズを入力">
-          <select id="sneaker-size-unit" onchange="onUnitChange()">
-            <option value="cm" selected>cm</option>
-            <option value="US">US</option>
-            <option value="EU">EU</option>
-            <option value="UK">UK</option>
+
+        <div class="form-group">
+          <div class="label-with-help">
+            <label for="exp-level" id="lbl-exp">クライミング経験</label>
+            <span class="help-icon" onclick="openHelp('exp')">?</span>
+          </div>
+          <select id="exp-level" onchange="updatePriorityLabels()">
+            <option value="1" id="opt-exp-1">1足目（初心者）</option>
+            <option value="2" id="opt-exp-2">2足目（ステップアップ）</option>
+            <option value="3" id="opt-exp-3">3足目以上（上級者）</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-help">
+            <label for="price-range" id="lbl-price">求める価格帯（予算）</label>
+            <span class="help-icon" onclick="openHelp('price')">?</span>
+          </div>
+          <select id="price-range" onchange="updatePriorityLabels()">
+            <option value="16000" id="opt-price-1">〜￥16,000</option>
+            <option value="26000" id="opt-price-2">〜￥26,000</option>
+            <option value="35000" selected id="opt-price-3">〜￥35,000（上限なし）</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-help">
+            <label for="toe-shape" id="lbl-toe">爪先の形状</label>
+            <span class="help-icon" onclick="openHelp('toe')">?</span>
+          </div>
+          <select id="toe-shape" onchange="updatePriorityLabels()">
+            <option value="egyptian" id="opt-toe-egyptian">エジプト型（親指が一番長い）</option>
+            <option value="greek" id="opt-toe-greek">ギリシャ型（人差し指が一番長い）</option>
+            <option value="square" id="opt-toe-square">スクエア型（指の長さが揃っている）</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-help">
+            <label for="sole-perf" id="lbl-sole">求めるソール特性</label>
+            <span class="help-icon" onclick="openHelp('sole')">?</span>
+          </div>
+          <select id="sole-perf" onchange="updatePriorityLabels()">
+            <option value="soft" id="opt-sole-soft">ソフト（グリップ力重視）</option>
+            <option value="allround" selected id="opt-sole-allround">オールラウンド（バランス型）</option>
+            <option value="hard" id="opt-sole-hard">ハード（エッジング重視）</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <div class="label-with-help">
+            <label for="select-type" id="lbl-select">選択基準</label>
+            <span class="help-icon" onclick="openHelp('selectType')">?</span>
+          </div>
+          <select id="select-type" onchange="updatePriorityLabels()">
+            <option value="popular" id="opt-select-pop">人気モデルから選ぶ</option>
+            <option value="fit" id="opt-select-fit">あなたに合ったモデルから選ぶ</option>
           </select>
         </div>
       </div>
 
-      <div class="form-group">
-        <div class="label-with-help">
-          <label for="exp-level" id="lbl-exp">クライミング経験</label>
-          <span class="help-icon" onclick="openHelp('exp')">?</span>
-        </div>
-        <select id="exp-level" onchange="updatePriorityLabels()">
-          <option value="1" id="opt-exp-1">1足目（初心者）</option>
-          <option value="2" id="opt-exp-2">2足目（ステップアップ）</option>
-          <option value="3" id="opt-exp-3">3足目以上（上級者）</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <div class="label-with-help">
-          <label for="price-range" id="lbl-price">求める価格帯（上限）</label>
-          <span class="help-icon" onclick="openHelp('price')">?</span>
-        </div>
-        <select id="price-range" onchange="updatePriorityLabels()">
-          <option value="15000" id="opt-price-1">〜￥15,000</option>
-          <option value="25000" id="opt-price-2">〜￥25,000</option>
-          <option value="35000" selected id="opt-price-3">〜￥35,000（上限なし）</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <div class="label-with-help">
-          <label for="toe-shape" id="lbl-toe">爪先の形状</label>
-          <span class="help-icon" onclick="openHelp('toe')">?</span>
-        </div>
-        <select id="toe-shape" onchange="updatePriorityLabels()">
-          <option value="egyptian" id="opt-toe-egyptian">エジプト型（親指が一番長い）</option>
-          <option value="greek" id="opt-toe-greek">ギリシャ型（人差し指が一番長い）</option>
-          <option value="square" id="opt-toe-square">スクエア型（指の長さが揃っている）</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <div class="label-with-help">
-          <label for="sole-perf" id="lbl-sole">求めるソール特性</label>
-          <span class="help-icon" onclick="openHelp('sole')">?</span>
-        </div>
-        <select id="sole-perf" onchange="updatePriorityLabels()">
-          <option value="soft" id="opt-sole-soft">ソフト（グリップ力重視）</option>
-          <option value="allround" selected id="opt-sole-allround">オールラウンド（バランス型）</option>
-          <option value="hard" id="opt-sole-hard">ハード（エッジング重視）</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <div class="label-with-help">
-          <label for="select-type" id="lbl-select">選択基準</label>
-          <span class="help-icon" onclick="openHelp('selectType')">?</span>
-        </div>
-        <select id="select-type" onchange="updatePriorityLabels()">
-          <option value="popular" id="opt-select-pop">人気モデルから選ぶ</option>
-          <option value="fit" id="opt-select-fit">あなたに合ったモデルから選ぶ</option>
-        </select>
-      </div>
-
+      <!-- 詳細検索項目ブロック（目立つデザインに変更） -->
       <div class="detail-toggle-header" onclick="toggleDetailSection()">
-        <h2 id="txt-h2-detail" style="margin:0; border:none; padding:0;">詳細検索項目</h2>
+        <h2 id="txt-h2-detail" style="margin:0; border:none; padding:0;">🔍 詳細検索項目（足型・こだわり条件の指定）</h2>
         <div class="toggle-btn-icon" id="detail-toggle-icon">＋</div>
       </div>
 
-      <div id="detail-section">
+      <div id="detail-section" class="card">
         <div class="form-group">
           <div class="label-with-help">
             <label for="comfort-focus" id="lbl-comfort">履き心地・慣れに関する優先度</label>
@@ -349,7 +363,7 @@
           </div>
           <div class="checkbox-group" style="margin-top: 8px;">
             <label><input type="checkbox" name="priority" value="exp"> <span class="p-exp">クライミング経験</span><span id="val-exp" class="priority-selected-val"></span></label>
-            <label><input type="checkbox" name="priority" value="price"> <span class="p-price">求める価格帯（上限）</span><span id="val-price" class="priority-selected-val"></span></label>
+            <label><input type="checkbox" name="priority" value="price"> <span class="p-price">求める価格帯（予算）</span><span id="val-price" class="priority-selected-val"></span></label>
             <label><input type="checkbox" name="priority" value="toe"> <span class="p-toe">爪先の形状</span><span id="val-toe" class="priority-selected-val"></span></label>
             <label><input type="checkbox" name="priority" value="sole"> <span class="p-sole">求めるソール特性</span><span id="val-sole" class="priority-selected-val"></span></label>
             <label><input type="checkbox" name="priority" value="select"> <span class="p-select">選択基準</span><span id="val-select" class="priority-selected-val"></span></label>
@@ -361,7 +375,10 @@
         </div>
       </div>
 
-      <button type="button" id="btn-diag" onclick="runDiagnosis()" style="margin-top: 25px;">診断する</button>
+      <!-- 診断ボタンを独立したブロックとして配置 -->
+      <div class="card" style="text-align: center; padding: 15px;">
+        <button type="button" id="btn-diag" onclick="runDiagnosis()" style="font-size: 18px; padding: 16px;">診断する</button>
+      </div>
     </form>
   </div>
 
@@ -403,8 +420,8 @@
     // 【1】データベース用URL（Sheet1読み込み用）
     const DB_ENDPOINT = "https://script.google.com/macros/s/AKfycbyo0d3H9TFXDC_eq8ssYZvD80XgSO169PViCEB6HnTYqbd1pmGHQWstuq5wRA9Dq70omg/exec";
     
-    // 【2】記録用URL（Sheet3へのログ・レビュー保存用 - 最新のURL）
-    const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbxV8wkSdqJwog3jq2nZ3bhPNvG7DYpur5x3t5YKodIIyGhf75yaBwcx-TSxW9cuT2p8vA/exec";
+    // 【2】記録用URL（Sheet3へのログ・レビュー保存用 - 新しいGASコードURL）
+    const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbwabFgoae3_xo1UXmb9fgxBQ3hUa_zIJXK5-nwBS_fh9FjE5zSgnq6uthyz88ddsX5LOA/exec";
 
     let database = [];
     let currentRating = 0;
@@ -412,7 +429,16 @@
     let previousUnit = "cm";
     let currentLang = "ja";
     let lastTop5Cache = [];
-    let lastCmBaseCache = 26.0;
+    let lastInputSizeVal = "26.0";
+    let lastInputSizeUnit = "cm";
+
+    // 単位ごとのプルダウン選択肢範囲（0.5刻み）
+    const sizeRanges = {
+      cm: { min: 20.0, max: 32.0 },
+      US: { min: 2.0,  max: 14.0 },
+      EU: { min: 32.0, max: 49.0 },
+      UK: { min: 1.0,  max: 13.0 }
+    };
 
     const dict = {
       ja: {
@@ -426,9 +452,9 @@
         optExp1: "1足目（初心者）",
         optExp2: "2足目（ステップアップ）",
         optExp3: "3足目以上（上級者）",
-        lblPrice: "求める価格帯（上限）",
-        optPrice1: "〜￥15,000",
-        optPrice2: "〜￥25,000",
+        lblPrice: "求める価格帯（予算）",
+        optPrice1: "〜￥16,000",
+        optPrice2: "〜￥26,000",
         optPrice3: "〜￥35,000（上限なし）",
         lblToe: "爪先の形状",
         optToeEgy: "エジプト型（親指が一番長い）",
@@ -441,7 +467,7 @@
         lblSelect: "選択基準",
         optSelPop: "人気モデルから選ぶ",
         optSelFit: "あなたに合ったモデルから選ぶ",
-        h2Detail: "詳細検索項目",
+        h2Detail: "🔍 詳細検索項目（足型・こだわり条件の指定）",
         lblComfort: "履き心地・慣れに関する優先度",
         optComNone: "指定しない",
         optComCom: "快適性を優先(シューズに慣れていない)",
@@ -458,7 +484,7 @@
         optHeelLarge: "大きめ",
         optHeelSmall: "小さめ/細め",
         lblPriority: "特に優先したい特性（複数選択可）",
-        pExp: "クライミング経験", pPrice: "求める価格帯（上限）", pToe: "爪先の形状", pSole: "求めるソール特性", pSelect: "選択基準", pComfort: "履き心地・慣れに関する優先度", pWidth: "幅の広さ", pInstep: "甲の高さ", pHeel: "踵（ヒール）の大きさ",
+        pExp: "クライミング経験", pPrice: "求める価格帯（予算）", pToe: "爪先の形状", pSole: "求めるソール特性", pSelect: "選択基準", pComfort: "履き心地・慣れに関する優先度", pWidth: "幅の広さ", pInstep: "甲の高さ", pHeel: "踵（ヒール）の大きさ",
         btnDiag: "診断する",
         h2Top5: "あなたにおすすめのTop 5",
         btnRetry: "もう一度診断する",
@@ -466,7 +492,7 @@
         reviewDesc: "この診断はいかがでしたか？ご意見をお聞かせください。<br>（1回の診断につき1回のみ送信できます）",
         reviewPlaceholder: "レビュー・ご要望を入力してください",
         btnSubmitReview: "レビューを送信する",
-        msgNoResult: "条件に完全一致するシューズが見つかりませんでした。<br>価格帯の条件を広げて再度お試しください。",
+        msgNoResult: "条件に一致するサイズ取扱のある推奨シューズが見つかりませんでした。<br>条件を広げて再度お試しください。",
         alertDb: "データベースがまだ読み込まれていません。しばらく待ってから再度お試しください。",
         alertStar: "星評価（1〜5）を選択してください。",
         alertReviewDone: "レビューを送信しました！ありがとうございます。",
@@ -486,8 +512,8 @@
         optExp2: "2nd Shoes (Step-up)",
         optExp3: "3rd Shoes or more (Advanced)",
         lblPrice: "Maximum Budget",
-        optPrice1: "Up to ¥15,000",
-        optPrice2: "Up to ¥25,000",
+        optPrice1: "Up to ¥16,000",
+        optPrice2: "Up to ¥26,000",
         optPrice3: "Up to ¥35,000 (No limit)",
         lblToe: "Toe Shape",
         optToeEgy: "Egyptian (Big toe is longest)",
@@ -500,7 +526,7 @@
         lblSelect: "Selection Criteria",
         optSelPop: "Popular Models",
         optSelFit: "Fit-oriented Models",
-        h2Detail: "Advanced Filters",
+        h2Detail: "🔍 Advanced Filters",
         lblComfort: "Comfort & Experience Focus",
         optComNone: "No preference",
         optComCom: "Comfort priority (Beginner-friendly)",
@@ -525,7 +551,7 @@
         reviewDesc: "How was your diagnosis? Please let us know your feedback.<br>(Can be submitted once per diagnosis)",
         reviewPlaceholder: "Enter your review or comments here",
         btnSubmitReview: "Submit Review",
-        msgNoResult: "No shoes strictly matched your criteria.<br>Please try broadening your budget or size filters.",
+        msgNoResult: "No shoes strictly matched your criteria and handled sizes.<br>Please try broadening your budget or filters.",
         alertDb: "Database is still loading. Please wait a moment and try again.",
         alertStar: "Please select a star rating (1-5).",
         alertReviewDone: "Review submitted successfully! Thank you.",
@@ -537,7 +563,7 @@
 
     const helpTexts = {
       ja: {
-        sneakerSize: "普段履いているスニーカーのサイズを入力してください。ブランドごとに最適なサイズ（EU、US、UK）に自動換算して推奨サイズをご提案します。",
+        sneakerSize: "普段履いているスニーカーのサイズを選択してください。単位を切り替えると自動でサイズが換算されます。",
         exp: "クライミング（ボルダリング）の経験年数や所有しているシューズの足数を選択してください。経験に応じた適切な剛性・ソールのモデルが選ばれます。",
         price: "検討しているご予算の上限を選択してください。選択した金額以下のシューズが候補になります。",
         toe: "足先の形状（指の長さのバランス）を選んでください。爪先に負担がかかりにくいモデルを絞り込みます。",
@@ -550,7 +576,7 @@
         priority: "検索結果のスコア計算において、特に重視したい項目にチェックを入れてください。"
       },
       en: {
-        sneakerSize: "Enter your regular sneaker size. It will be automatically converted to brand-specific recommended sizes.",
+        sneakerSize: "Select your regular sneaker size. Sizes convert automatically when changing units.",
         exp: "Select your climbing experience level to find models suited for your stage.",
         price: "Select your maximum budget.",
         toe: "Select your toe shape for better fit matching.",
@@ -564,7 +590,75 @@
       }
     };
 
-    // 各項目の選択中条件を「太文字」でリアルタイム更新する処理
+    function populateSizeSelect(unit, currentVal) {
+      const select = document.getElementById('sneaker-size-val');
+      select.innerHTML = '';
+      const range = sizeRanges[unit] || sizeRanges.cm;
+      
+      for (let s = range.min; s <= range.max; s += 0.5) {
+        const opt = document.createElement('option');
+        opt.value = s.toFixed(1);
+        opt.textContent = s.toFixed(1);
+        select.appendChild(opt);
+      }
+
+      if (currentVal !== undefined) {
+        let closestOpt = range.min;
+        let minDiff = Infinity;
+        for (let s = range.min; s <= range.max; s += 0.5) {
+          let diff = Math.abs(s - currentVal);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestOpt = s;
+          }
+        }
+        select.value = closestOpt.toFixed(1);
+      }
+    }
+
+    function initSizeSelect() {
+      populateSizeSelect('cm', 26.0);
+    }
+
+    function convertSize(val, fromUnit, toUnit) {
+      val = parseFloat(val);
+      if (isNaN(val)) return 26.0;
+      if (fromUnit === toUnit) return val;
+
+      let cm = 26.0;
+      if (fromUnit === 'cm') cm = val;
+      else if (fromUnit === 'US') cm = val + 18.0;
+      else if (fromUnit === 'UK') cm = val + 19.0;
+      else if (fromUnit === 'EU') cm = 26.0 + (val - 41.0) * (2 / 3);
+
+      if (toUnit === 'cm') return cm;
+      if (toUnit === 'US') return cm - 18.0;
+      if (toUnit === 'UK') return cm - 19.0;
+      if (toUnit === 'EU') {
+        let eu = 41.0 + (cm - 26.0) / (2 / 3);
+        return Math.round(eu * 2) / 2;
+      }
+      return cm;
+    }
+
+    function onUnitChange() {
+      const valSelect = document.getElementById('sneaker-size-val');
+      const unitSelect = document.getElementById('sneaker-size-unit');
+      const currentVal = parseFloat(valSelect.value);
+      const newUnit = unitSelect.value;
+      if (isNaN(currentVal)) return;
+
+      const convertedVal = convertSize(currentVal, previousUnit, newUnit);
+      populateSizeSelect(newUnit, convertedVal);
+      previousUnit = newUnit;
+    }
+
+    function getCurrentCm() {
+      const val = parseFloat(document.getElementById('sneaker-size-val').value) || 26.0;
+      const unit = document.getElementById('sneaker-size-unit').value;
+      return convertSize(val, unit, 'cm');
+    }
+
     function updatePriorityLabels() {
       const getSelectText = (id) => {
         const el = document.getElementById(id);
@@ -623,7 +717,7 @@
       updateTexts();
       updatePriorityLabels();
       if (lastTop5Cache.length > 0) {
-        renderResults(lastCmBaseCache, lastTop5Cache);
+        renderResults(lastInputSizeVal, lastInputSizeUnit, lastTop5Cache);
       }
     }
 
@@ -706,48 +800,9 @@
       }
     }
     
-    // 初期化
     loadDatabase();
+    initSizeSelect();
     updatePriorityLabels();
-
-    function convertSize(val, fromUnit, toUnit) {
-      val = parseFloat(val);
-      if (isNaN(val)) return 26.0;
-      if (fromUnit === toUnit) return val;
-
-      let cm = 26.0;
-      if (fromUnit === 'cm') cm = val;
-      else if (fromUnit === 'US') cm = val + 18.0;
-      else if (fromUnit === 'UK') cm = val + 19.0;
-      else if (fromUnit === 'EU') cm = 26.0 + (val - 41.0) * (2 / 3);
-
-      if (toUnit === 'cm') return cm;
-      if (toUnit === 'US') return cm - 18.0;
-      if (toUnit === 'UK') return cm - 19.0;
-      if (toUnit === 'EU') {
-        let eu = 41.0 + (cm - 26.0) / (2 / 3);
-        return Math.round(eu * 2) / 2;
-      }
-      return cm;
-    }
-
-    function onUnitChange() {
-      const valInput = document.getElementById('sneaker-size-val');
-      const unitSelect = document.getElementById('sneaker-size-unit');
-      const newVal = parseFloat(valInput.value);
-      const newUnit = unitSelect.value;
-      if (isNaN(newVal)) return;
-
-      const converted = convertSize(newVal, previousUnit, newUnit);
-      valInput.value = converted.toFixed(1);
-      previousUnit = newUnit;
-    }
-
-    function getCurrentCm() {
-      const val = parseFloat(document.getElementById('sneaker-size-val').value) || 26.0;
-      const unit = document.getElementById('sneaker-size-unit').value;
-      return convertSize(val, unit, 'cm');
-    }
 
     function showPage(pageId) {
       document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
@@ -800,22 +855,36 @@
       const absoluteMin = (parseFloat(shoeMin) || 0) + offset;
       const absoluteMax = (parseFloat(shoeMax) || 0) + offset;
 
+      const rawMin = minVal;
+      const rawMax = maxVal;
+      const rawMedian = (rawMin + rawMax) / 2;
+
       minVal = Math.max(minVal, absoluteMin);
       maxVal = Math.min(maxVal, absoluteMax);
       if (minVal > maxVal) minVal = maxVal;
 
+      const roundedMin = (Math.round(minVal * 2) / 2).toFixed(1);
+      const roundedMax = (Math.round(maxVal * 2) / 2).toFixed(1);
+
       return {
         unit: targetUnit,
-        min: (targetUnit === 'EU') ? (Math.round(minVal * 2) / 2).toFixed(1) : minVal.toFixed(1),
-        max: (targetUnit === 'EU') ? (Math.round(maxVal * 2) / 2).toFixed(1) : maxVal.toFixed(1)
+        min: roundedMin,
+        max: roundedMax,
+        rawMedian: rawMedian
       };
     }
 
     function sendLogToSheet3(logData) {
+      const formData = new URLSearchParams();
+      formData.append('action', 'saveLog');
+      for (const key in logData) {
+        formData.append(key, logData[key]);
+      }
+
       fetch(LOG_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ action: 'saveLog', ...logData })
+        body: formData
       }).catch(err => console.error("ログ送信エラー:", err));
     }
 
@@ -826,7 +895,13 @@
         return;
       }
 
+      const inputVal = document.getElementById('sneaker-size-val').value;
+      const inputUnit = document.getElementById('sneaker-size-unit').value;
       const cmBase = getCurrentCm();
+
+      lastInputSizeVal = inputVal;
+      lastInputSizeUnit = inputUnit;
+
       const exp = parseInt(document.getElementById('exp-level').value);
       const priceMax = parseFloat(document.getElementById('price-range').value) || 35000;
       const toe = document.getElementById('toe-shape').value;
@@ -850,6 +925,21 @@
         if ((exp === 1 && catLevel >= 3) || 
             (exp === 2 && (catLevel === 1 || catLevel === 4)) || 
             (exp === 3 && catLevel <= 2)) return;
+
+        const brand = getProp(shoe, ["brand", "ブランド"]);
+        const sizeMinRaw = parseFloat(getProp(shoe, ["sizemin", "サイズ最小"]));
+        const sizeMaxRaw = parseFloat(getProp(shoe, ["sizemax", "サイズ最大"]));
+        const sizeOffset = parseFloat(getProp(shoe, ["sizeoffset", "サイズオフセット"])) || 0;
+
+        const range = getRecommendedRange(brand, cmBase, sizeMinRaw, sizeMaxRaw, sizeOffset);
+        const recommendedMedian = range.rawMedian;
+
+        const dbMin = !isNaN(sizeMinRaw) ? sizeMinRaw : -Infinity;
+        const dbMax = !isNaN(sizeMaxRaw) ? sizeMaxRaw : Infinity;
+
+        if (recommendedMedian < dbMin || recommendedMedian > dbMax) {
+          return;
+        }
 
         let score = 200;
 
@@ -927,14 +1017,13 @@
         if (priorities.includes('instep') && instep !== 'none') score += 50;
         if (priorities.includes('heel') && heel !== 'none') score += 50;
 
-        scoredList.push({ ...shoe, calculatedScore: score });
+        scoredList.push({ ...shoe, calculatedScore: score, cachedRange: range });
       });
 
       scoredList.sort((a, b) => b.calculatedScore - a.calculatedScore);
       const top5 = scoredList.slice(0, 5);
 
       lastTop5Cache = top5;
-      lastCmBaseCache = cmBase;
 
       const expText = document.getElementById('exp-level').selectedOptions[0].text;
       const priceText = document.getElementById('price-range').selectedOptions[0].text;
@@ -947,9 +1036,19 @@
       const heelText = document.getElementById('heel-type').selectedOptions[0].text;
       const priorityText = priorities.join(", ");
 
+      let rank1Name = "";
+      if (top5.length > 0) {
+        const topShoe = top5[0];
+        const topBrand = getProp(topShoe, ["brand", "ブランド"]);
+        const topName = getProp(topShoe, ["name", "シューズ名", "モデル名", "品名"]);
+        rank1Name = (topBrand + " " + topName).trim();
+      }
+
       sendLogToSheet3({
+        code: "",
         width1: widthText,
-        sneakerSize: document.getElementById('sneaker-size-val').value + document.getElementById('sneaker-size-unit').value,
+        actionName: "診断実行",
+        sneakerSize: inputVal + " " + inputUnit,
         expLevel: expText,
         price: priceText,
         toe: toeText,
@@ -959,30 +1058,41 @@
         width2: widthText,
         instep: instepText,
         heel: heelText,
-        priority: priorityText
+        priority: priorityText,
+        rank1Shoes: rank1Name,
+        rating: "",
+        comment: ""
       });
 
-      renderResults(cmBase, top5);
+      renderResults(inputVal, inputUnit, top5);
       showPage('page-result');
     }
 
-    function renderResults(cmBase, top5) {
+    function renderResults(inputVal, inputUnit, top5) {
       const t = dict[currentLang];
+      const cmBase = convertSize(parseFloat(inputVal), inputUnit, 'cm');
+
       const euMid = 41.0 + (cmBase - 26.0) / (2 / 3);
-      const euMin = Math.round((euMid - 0.5) * 2) / 2;
-      const euMax = Math.round((euMid + 0.5) * 2) / 2;
+      const euMin = (Math.round((euMid - 0.5) * 2) / 2).toFixed(1);
+      const euMax = (Math.round((euMid + 0.5) * 2) / 2).toFixed(1);
 
       const usMid = cmBase - 18.0;
-      const ukMid = cmBase - 19.0;
+      const usMin = (Math.round((usMid - 0.5) * 2) / 2).toFixed(1);
+      const usMax = (Math.round((usMid + 0.5) * 2) / 2).toFixed(1);
 
+      const ukMid = cmBase - 19.0;
+      const ukMin = (Math.round((ukMid - 0.5) * 2) / 2).toFixed(1);
+      const ukMax = (Math.round((ukMid + 0.5) * 2) / 2).toFixed(1);
+
+      const displaySizeText = `${inputVal} ${inputUnit}`;
       const langPrefixSize = currentLang === 'en' ? "Recommended size range based on sneaker size " : "普段のサイズ ";
-      const langSuffixSize = currentLang === 'en' ? " cm:" : " cm に基づくブランド別推奨サイズ目安:";
+      const langSuffixSize = currentLang === 'en' ? ":" : " に基づくブランド別推奨サイズ目安:";
 
       document.getElementById('size-recommend').innerHTML = `
-        <strong>${langPrefixSize}${cmBase.toFixed(1)}${langSuffixSize}</strong><br>
-        LA SPORTIVA / SCARPA: <strong>EU ${euMin.toFixed(1)} 〜 ${euMax.toFixed(1)}</strong><br>
-        UNPARALLEL / MADROCK / BUTORA: <strong>US ${(usMid - 0.5).toFixed(1)} 〜 ${(usMid + 0.5).toFixed(1)}</strong><br>
-        TENAYA / BOREAL: <strong>UK ${(ukMid - 0.5).toFixed(1)} 〜 ${(ukMid + 0.5).toFixed(1)}</strong>
+        <strong>${langPrefixSize}${displaySizeText}${langSuffixSize}</strong><br>
+        LA SPORTIVA / SCARPA: <strong>EU ${euMin} 〜 ${euMax}</strong><br>
+        UNPARALLEL / MADROCK / BUTORA: <strong>US ${usMin} 〜 ${usMax}</strong><br>
+        TENAYA / BOREAL: <strong>UK ${ukMin} 〜 ${ukMax}</strong>
       `;
 
       const listContainer = document.getElementById('shoe-list');
@@ -996,16 +1106,12 @@
           const nameJa = getProp(shoe, ["name", "シューズ名", "モデル名", "品名"]);
           const nameEn = getProp(shoe, ["name_en", "nameen"]);
           const priceVal = parseFloat(getProp(shoe, ["price", "価格", "販売価格"])) || 0;
-          const sizeMin = getProp(shoe, ["sizemin", "サイズ最小"]);
-          const sizeMax = getProp(shoe, ["sizemax", "サイズ最大"]);
-          const sizeOffset = getProp(shoe, ["sizeoffset", "サイズオフセット"]);
           const imageUrl = getProp(shoe, ["imageUrl", "imageurl", "image_url", "画像url", "画像"]);
           const noteUrl = getProp(shoe, ["noteUrl", "noteurl", "note_url", "url"]);
           const descJa = getProp(shoe, ["description", "商品説明", "説明"]);
           const descEn = getProp(shoe, ["description_en", "descriptionen"]);
 
-          const offset = parseFloat(sizeOffset) || 0;
-          const range = getRecommendedRange(brand, cmBase, sizeMin, sizeMax, offset);
+          const range = shoe.cachedRange || getRecommendedRange(brand, cmBase, getProp(shoe, ["sizemin"]), getProp(shoe, ["sizemax"]), getProp(shoe, ["sizeoffset"]));
           
           const rankText = currentLang === 'en' ? `#${idx + 1}` : `第${idx + 1}位`;
           const detailText = currentLang === 'en' ? "Check shoe details!!" : "このシューズの詳細をチェック!!";
