@@ -85,7 +85,6 @@
 
     h2 { color: #222; font-size: 18px; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; margin-top: 0; }
     
-    /* 目立つように改善した詳細検索項目のトグルヘッダー */
     .detail-toggle-header {
       display: flex;
       justify-content: space-between;
@@ -177,8 +176,13 @@
     .badge { display: inline-block; background: #ff6f00; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     .brand-badge { background: #37474f; font-weight: normal; }
     
-    .price-label { color: #000; font-weight: bold; font-size: 15px; }
-    .price { font-size: 18px; color: #c62828; font-weight: bold; margin: 5px 0; display: inline-block; }
+    /* 価格表示エリアのスタイル調整 */
+    .price-area { margin: 6px 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+    .price-group { display: flex; align-items: baseline; gap: 4px; }
+    .price-label { color: #000; font-weight: bold; font-size: 14px; }
+    .normal-price-container { color: #555; font-size: 14px; }
+    .normal-price { text-decoration: line-through; font-weight: bold; color: #555; }
+    .sale-price { font-size: 20px; color: #c62828; font-weight: bold; }
     
     .note-btn { display: inline-block; margin-top: 10px; background: #2e7d32; color: white; padding: 8px 14px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 13px; }
     .note-btn:hover { background: #1b5e20; }
@@ -300,7 +304,7 @@
         </div>
       </div>
 
-      <!-- 詳細検索項目ブロック（目立つデザインに変更） -->
+      <!-- 詳細検索項目ブロック -->
       <div class="detail-toggle-header" onclick="toggleDetailSection()">
         <h2 id="txt-h2-detail" style="margin:0; border:none; padding:0;">🔍 詳細検索項目（足型・こだわり条件の指定）</h2>
         <div class="toggle-btn-icon" id="detail-toggle-icon">＋</div>
@@ -327,7 +331,7 @@
           </div>
           <select id="width-type" onchange="updatePriorityLabels()">
             <option value="none" class="opt-none">選択しない</option>
-            <option value="wide" id="opt-width-wide">広め</option>
+            <option value="wide" id="opt-width-wide">高め（広め）</option>
             <option value="narrow" id="opt-width-narrow">細め</option>
           </select>
         </div>
@@ -375,7 +379,7 @@
         </div>
       </div>
 
-      <!-- 診断ボタンを独立したブロックとして配置 -->
+      <!-- 診断ボタンブロック -->
       <div class="card" style="text-align: center; padding: 15px;">
         <button type="button" id="btn-diag" onclick="runDiagnosis()" style="font-size: 18px; padding: 16px;">診断する</button>
       </div>
@@ -420,7 +424,7 @@
     // 【1】データベース用URL（Sheet1読み込み用）
     const DB_ENDPOINT = "https://script.google.com/macros/s/AKfycbyo0d3H9TFXDC_eq8ssYZvD80XgSO169PViCEB6HnTYqbd1pmGHQWstuq5wRA9Dq70omg/exec";
     
-    // 【2】記録用URL（Sheet3へのログ・レビュー保存用 - 新しいGASコードURL）
+    // 【2】記録用URL（Sheet3へのログ・レビュー保存用）
     const LOG_ENDPOINT = "https://script.google.com/macros/s/AKfycbwabFgoae3_xo1UXmb9fgxBQ3hUa_zIJXK5-nwBS_fh9FjE5zSgnq6uthyz88ddsX5LOA/exec";
 
     let database = [];
@@ -432,7 +436,6 @@
     let lastInputSizeVal = "26.0";
     let lastInputSizeUnit = "cm";
 
-    // 単位ごとのプルダウン選択肢範囲（0.5刻み）
     const sizeRanges = {
       cm: { min: 20.0, max: 32.0 },
       US: { min: 2.0,  max: 14.0 },
@@ -498,7 +501,8 @@
         alertReviewDone: "レビューを送信しました！ありがとうございます。",
         alertReviewLimit: "1回の診断につき送れるレビューは1回までです。",
         taxIncl: "(税込)",
-        priceLabel: "販売価格: "
+        priceLabel: "販売価格: ",
+        normalPriceLabel: "通常価格: "
       },
       en: {
         loading: "Loading database...",
@@ -557,7 +561,8 @@
         alertReviewDone: "Review submitted successfully! Thank you.",
         alertReviewLimit: "You can only submit one review per diagnosis.",
         taxIncl: "(Tax Included)",
-        priceLabel: "Price: "
+        priceLabel: "Price: ",
+        normalPriceLabel: "Normal Price: "
       }
     };
 
@@ -1105,7 +1110,11 @@
           const brand = getProp(shoe, ["brand", "ブランド"]);
           const nameJa = getProp(shoe, ["name", "シューズ名", "モデル名", "品名"]);
           const nameEn = getProp(shoe, ["name_en", "nameen"]);
+          
+          // 価格データの取得（販売価格と通常価格）
           const priceVal = parseFloat(getProp(shoe, ["price", "価格", "販売価格"])) || 0;
+          const normalPriceVal = parseFloat(getProp(shoe, ["normalprice", "通常価格", "定価", "originalprice"])) || 0;
+
           const imageUrl = getProp(shoe, ["imageUrl", "imageurl", "image_url", "画像url", "画像"]);
           const noteUrl = getProp(shoe, ["noteUrl", "noteurl", "note_url", "url"]);
           const descJa = getProp(shoe, ["description", "商品説明", "説明"]);
@@ -1124,6 +1133,34 @@
           const fallbackImg = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22600%22%20height%3D%22300%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23eee%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23aaa%22%20font-size%3D%2220%22%3ENo%20Image%3C%2Ftext%3E%3C%2Fsvg%3E";
           const validImgUrl = (imageUrl && imageUrl.toString().trim() !== "") ? imageUrl : fallbackImg;
 
+          // 通常価格が入力されている場合の価格表示HTML組み立て
+          let priceHtml = '';
+          if (normalPriceVal > 0 && normalPriceVal !== priceVal) {
+            priceHtml = `
+              <div class="price-area">
+                <div class="price-group">
+                  <span class="price-label">${t.normalPriceLabel}</span>
+                  <span class="normal-price-container">¥<span class="normal-price">${normalPriceVal.toLocaleString()}</span></span>
+                </div>
+                <div class="price-group">
+                  <span class="price-label">${t.priceLabel}</span>
+                  <span class="sale-price">¥${priceVal.toLocaleString()}</span>
+                  <span style="font-size: 13px; font-weight: bold; color: #333;">${t.taxIncl}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            priceHtml = `
+              <div class="price-area">
+                <div class="price-group">
+                  <span class="price-label">${t.priceLabel}</span>
+                  <span class="sale-price">¥${priceVal.toLocaleString()}</span>
+                  <span style="font-size: 13px; font-weight: bold; color: #333;">${t.taxIncl}</span>
+                </div>
+              </div>
+            `;
+          }
+
           const html = `
             <div class="shoe-card">
               <div class="shoe-img-container">
@@ -1136,7 +1173,7 @@
                 </div>
                 <h3>${shoeName}</h3>
                 <p style="margin: 4px 0;"><strong>${sizeText} (${range.unit}):</strong> <span style="color:#d32f2f; font-weight:bold;">${range.min} 〜 ${range.max}</span></p>
-                <p><span class="price-label">${t.priceLabel}</span><span class="price">¥${priceVal.toLocaleString()} ${t.taxIncl}</span></p>
+                ${priceHtml}
                 <p style="font-size: 13px; color: #555; margin: 5px 0 8px 0;">${shoeDesc || ''}</p>
                 ${noteUrl ? `<a href="${noteUrl}" target="_blank" rel="noopener" class="note-btn">${detailText}</a>` : ''}
               </div>
